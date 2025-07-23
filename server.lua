@@ -22,25 +22,30 @@ end)
 Citizen.CreateThread(function()
     while true do
         Citizen.Wait(Config.intervaloPagamento * 60 * 1000)
-
         for empresaId, empresaData in pairs(empresasDB) do
             if empresaData.dono and empresaData.dono ~= '' then
                 local configEmpresa = Config.Empresas[empresaId]
                 if not configEmpresa then goto continue end
-
                 local nivel = empresaData.nivel or 0
-                local pagamento = configEmpresa.pagamentoPorNivel[nivel] or 0
+                local pagamento = configEmpresa.pagamentoPorNivel[nivel]
 
-                if pagamento > 0 then
-                    local xPlayer = ESX.GetPlayerFromIdentifier(empresaData.dono)
-                    if xPlayer then
-                        xPlayer.addAccountMoney('bank', pagamento)
-                        TriggerClientEvent('esx:showNotification', xPlayer.source,
-                            ("Recebeste ~g~%s€~w~ da tua empresa '%s' (Nível %d)."):
-                            format(ESX.Math.GroupDigits(pagamento), configEmpresa.nome, nivel))
-                    end
+                if pagamento ~= nil then
+                    MySQL.Async.execute('UPDATE empresas SET dinheiro = dinheiro + @pagamento WHERE id = @id', {
+                        ['@pagamento'] = pagamento,
+                        ['@id'] = empresaId
+                    }, function(rowsChanged)
+                        if rowsChanged > 0 then
+                            local xPlayer = ESX.GetPlayerFromIdentifier(empresaData.dono)
+                            if xPlayer then
+                                local pagamentoFormatado = ESX.Math.GroupDigits(pagamento)
+                                TriggerClientEvent('esx:showNotification', xPlayer.source, 
+                                    ("Recebeste ~g~%s€~w~ de rendimento da tua empresa '%s'."):format(pagamentoFormatado, configEmpresa.nome))
+                            end
+                        else
+                            print(("Erro ao tentar adicionar pagamento à empresa '%s'."):format(configEmpresa.nome))
+                        end
+                    end)
                 end
-
                 ::continue::
             end
         end
@@ -51,53 +56,38 @@ end)
 Citizen.CreateThread(function()
     while true do
         Citizen.Wait(INTERVALO_MANUTENCAO * 60 * 1000)
-
         for empresaId, empresaData in pairs(empresasDB) do
             if empresaData.dono and empresaData.dono ~= '' then
                 local configEmpresa = Config.Empresas[empresaId]
                 if not configEmpresa then goto continue end
-
                 local valorManutencao = configEmpresa.manutencao or 0
                 if valorManutencao > 0 then
                     local xPlayer = ESX.GetPlayerFromIdentifier(empresaData.dono)
                     if xPlayer then
                         local bankMoney = xPlayer.getAccount('bank').money
                         local avisosAtuais = empresaData.avisos or 0
-
                         if bankMoney >= valorManutencao then
                             xPlayer.removeAccountMoney('bank', valorManutencao)
-
-                            empresaData.avisos = 0
-                            MySQL.Async.execute('UPDATE empresas SET avisos = 0 WHERE id = @id', {
-                                ['@id'] = empresaId
-                            })
-
                             TriggerClientEvent('esx:showNotification', xPlayer.source,
                               ("Pagamento de manutenção: ~r~%s€~w~ descontado pela empresa '%s'."):
                               format(ESX.Math.GroupDigits(valorManutencao), configEmpresa.nome))
-
                         else
                             local novosAvisos = avisosAtuais + 1
                             empresaData.avisos = novosAvisos
-
                             MySQL.Async.execute('UPDATE empresas SET avisos = @avisos WHERE id = @id', {
                                 ['@avisos'] = novosAvisos,
                                 ['@id'] = empresaId
                             })
-
                             if novosAvisos >= MAX_AVISOS then
                                 empresaData.dono = ''
                                 empresaData.nivel = 0
                                 empresaData.avisos = 0
-
                                 MySQL.Async.execute('UPDATE empresas SET dono = "", nivel = 0, avisos = 0 WHERE id = @id', {
                                     ['@id'] = empresaId
                                 })
-
                                 TriggerClientEvent('esx:showNotification', xPlayer.source,
                                   ("A tua empresa '%s' foi à falência após ~r~%d avisos~w~ por falta de pagamento."):
                                   format(configEmpresa.nome, MAX_AVISOS))
-
                             else
                                 TriggerClientEvent('esx:showNotification', xPlayer.source,
                                   ("Não tens dinheiro suficiente para pagar a manutenção da empresa '%s'. ~r~Aviso %d/%d.~w~"):
@@ -129,6 +119,7 @@ AddEventHandler('comprarempresas:abrirMenu', function(empresaId)
         if results[1] then
             empresaDB.dono = results[1].dono or ''
             empresaDB.nivel = tonumber(results[1].nivel) or 0
+            empresaDB.avisos = tonumber(results[1].avisos) or 0
         end
 
         if empresaDB.dono == '' then
@@ -137,6 +128,7 @@ AddEventHandler('comprarempresas:abrirMenu', function(empresaId)
             local isDono = (empresaDB.dono == identifier)
             if isDono then
                 empresa.nivel = empresaDB.nivel or 0
+                empresa.avisos = empresaDB.avisos or 0
                 TriggerClientEvent('comprarempresas:abrirMenuCliente', src, empresaId, empresa, true)
             else
                 TriggerClientEvent('esx:showNotification', src, 'Esta empresa já tem dono.')
@@ -199,6 +191,52 @@ AddEventHandler('comprarempresas:subirNivel', function(empresaId)
         }, function(rowsChanged)
             TriggerClientEvent('esx:showNotification', src, '~g~Investimento feito!~w~ Agora estás no nível ' .. proximoNivel)
         end)
+    end)
+end)
+
+-- Dinheiro empresa
+RegisterServerEvent('comprarempresas:verDinheiro')
+AddEventHandler('comprarempresas:verDinheiro', function(empresaId)
+    local src = source
+    local xPlayer = ESX.GetPlayerFromId(src)
+    local identifier = xPlayer.identifier
+    local empresa = Config.Empresas[empresaId]
+    
+    local empresaData = empresasDB[empresaId]
+    if not empresaData or empresaData.dono ~= identifier then
+        TriggerClientEvent('esx:showNotification', src, "Não tens permissão para ver o dinheiro desta empresa.")
+        return
+    end
+
+    MySQL.Async.fetchScalar('SELECT dinheiro FROM empresas WHERE id = @id', {["@id"] = empresaId}, function(dinheiro)
+        if dinheiro then
+            TriggerClientEvent('comprarempresas:abrirCofreEmpresa', src, empresaId, dinheiro, empresa)
+        else
+            TriggerClientEvent('esx:showNotification', src, "Erro ao obter o dinheiro da empresa.")
+        end
+    end)
+end)
+
+RegisterServerEvent('comprarempresas:retirarDinheiro')
+AddEventHandler('comprarempresas:retirarDinheiro', function(empresaId)
+    local src = source
+    local xPlayer = ESX.GetPlayerFromId(src)
+    local identifier = xPlayer.identifier
+    
+    local empresaData = empresasDB[empresaId]
+    if not empresaData or empresaData.dono ~= identifier then
+        TriggerClientEvent('esx:showNotification', src, "Não tens permissão para retirar o dinheiro desta empresa.")
+        return
+    end
+
+    MySQL.Async.fetchScalar('SELECT dinheiro FROM empresas WHERE id = @id', {["@id"] = empresaId}, function(dinheiro)
+        if dinheiro and dinheiro > 0 then
+            xPlayer.addAccountMoney('bank', dinheiro)
+            MySQL.Async.execute('UPDATE empresas SET dinheiro = 0 WHERE id = @id', {["@id"] = empresaId})
+            TriggerClientEvent('esx:showNotification', src, "Retiraste ~g~" .. ESX.Math.GroupDigits(dinheiro) .. "€~w~ do cofre da empresa.")
+        else
+            TriggerClientEvent('esx:showNotification', src, "Não há dinheiro disponível para retirada.")
+        end
     end)
 end)
 
