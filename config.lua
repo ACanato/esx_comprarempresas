@@ -24,6 +24,7 @@ Config.Empresas = {
         },
         maxNivel = 5,
         pagamentoPorNivel = {
+            [0] = 5000,
             [1] = 10000,
             [2] = 20000,
             [3] = 35000,
