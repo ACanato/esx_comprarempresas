@@ -30,6 +30,10 @@ Este script permite aos jogadores adquirir, gerir e lucrar com empresas no servi
 - Recebe 80% do valor base da empresa.
 - A empresa volta a ficar disponível para novos compradores.
 
+### 💰 Cofre da Empresa
+- Sistema de cofre da empresa, onde os lucros vão diretamente para o cofre.
+- O proprietário pode aceder ao Menu da Empresa para levantar as verbas acumuladas disponíveis no cofre.
+
 ---
 
 ## 🛠️ Requisitos
