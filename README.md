@@ -38,6 +38,7 @@ Este script permite aos jogadores adquirir, gerir e lucrar com empresas no servi
 
 ## 🛠️ Requisitos
 - **ESX Framework**
+- **es_extended 1.1**
 - Base de dados MySQL
 
 ---
