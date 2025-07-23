@@ -68,7 +68,9 @@ AddEventHandler('comprarempresas:abrirMenuCliente', function(empresaId, empresa,
     local elements = {}
 
     if isDono then   
+        table.insert(elements, {label = "⛔ Avisos: " .. (empresa.avisos or 0) .. " / 3", value = "info_avisos", disabled = true})
         table.insert(elements, {label = "⬆️ Investimento atual: Nível " .. (empresa.nivel or 0), value = "info_nivel", disabled = true})
+        table.insert(elements, {label = "💰 Cofre da Empresa", value = "ver_dinheiro"})
         if empresa.nivel < (Config.Empresas[empresaId].maxNivel or 5) then
             local proximoNivel = (empresa.nivel or 0) + 1
             local custo = Config.Empresas[empresaId].investimento[proximoNivel]
@@ -92,6 +94,8 @@ AddEventHandler('comprarempresas:abrirMenuCliente', function(empresaId, empresa,
             TriggerServerEvent('comprarempresas:subirNivel', empresaId)
             menu.close()
             menuAberto = false
+        elseif data.current.value == "ver_dinheiro" then    
+            TriggerServerEvent('comprarempresas:verDinheiro', empresaId)
         elseif data.current.value == "vender_empresa" then    
             ESX.UI.Menu.CloseAll()
             menu.close()
@@ -131,5 +135,26 @@ AddEventHandler('comprarempresas:abrirMenuCompra', function(empresaId, empresa)
         menu.close()
         menuAberto = false
         empresaPos = nil
+    end)
+end)
+
+RegisterNetEvent('comprarempresas:abrirCofreEmpresa')
+AddEventHandler('comprarempresas:abrirCofreEmpresa', function(empresaId, dinheiro, empresa)
+    local elements = {
+        {label = "💶 Dinheiro do cofre: " .. ESX.Math.GroupDigits(dinheiro) .. "€", value = nil, disabled = true},
+        {label = "Retirar Dinheiro", value = "retirar_dinheiro"}
+    }
+
+    ESX.UI.Menu.Open('default', GetCurrentResourceName(), 'menu_cofre_empresa', {
+        title = "Cofre da Empresa - " .. empresa.nome,
+        align = 'left',
+        elements = elements
+    }, function(data, menu)
+        if data.current.value == 'retirar_dinheiro' then
+            TriggerServerEvent('comprarempresas:retirarDinheiro', empresaId)
+            menu.close()
+        end
+    end, function(data, menu)
+        menu.close()
     end)
 end)
