@@ -1,4 +1,4 @@
-# 🏢 Comprar Empresas (v1.0) – ESX FiveM
+# 🏢 Comprar Empresas (v1.1) – ESX FiveM
 
 Este script permite aos jogadores adquirir, gerir e lucrar com empresas no servidor FiveM baseado em ESX. Ideal para enriquecer a economia do teu servidor com uma dinâmica de negócios realista e envolvente.
 
