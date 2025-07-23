@@ -3,7 +3,7 @@ game 'gta5'
 
 author 'Canato'
 description 'Sistema de Empresas'
-version '1.0.0'
+version '1.1.0'
 
 dependency 'es_extended'
 
