@@ -37,12 +37,11 @@ Citizen.CreateThread(function()
                         if rowsChanged > 0 then
                             local xPlayer = ESX.GetPlayerFromIdentifier(empresaData.dono)
                             if xPlayer then
-                                local pagamentoFormatado = ESX.Math.GroupDigits(pagamento)
                                 TriggerClientEvent('esx:showNotification', xPlayer.source, 
-                                    ("Recebeste ~g~%s€~w~ de rendimento da tua empresa '%s'."):format(pagamentoFormatado, configEmpresa.nome))
+                                    _U('income_notification', ESX.Math.GroupDigits(pagamento), configEmpresa.nome))
                             end
                         else
-                            print(("Erro ao tentar adicionar pagamento à empresa '%s'."):format(configEmpresa.nome))
+                            print(_U('error_add_payment', configEmpresa.nome))
                         end
                     end)
                 end
@@ -69,8 +68,7 @@ Citizen.CreateThread(function()
                         if bankMoney >= valorManutencao then
                             xPlayer.removeAccountMoney('bank', valorManutencao)
                             TriggerClientEvent('esx:showNotification', xPlayer.source,
-                              ("Pagamento de manutenção: ~r~%s€~w~ descontado pela empresa '%s'."):
-                              format(ESX.Math.GroupDigits(valorManutencao), configEmpresa.nome))
+                              _U('maintenance_payment_notification', ESX.Math.GroupDigits(valorManutencao), configEmpresa.nome))
                         else
                             local novosAvisos = avisosAtuais + 1
                             empresaData.avisos = novosAvisos
@@ -86,12 +84,10 @@ Citizen.CreateThread(function()
                                     ['@id'] = empresaId
                                 })
                                 TriggerClientEvent('esx:showNotification', xPlayer.source,
-                                  ("A tua empresa '%s' foi à falência após ~r~%d avisos~w~ por falta de pagamento."):
-                                  format(configEmpresa.nome, MAX_AVISOS))
+                                  _U('bankruptcy_notification', configEmpresa.nome, MAX_AVISOS))
                             else
                                 TriggerClientEvent('esx:showNotification', xPlayer.source,
-                                  ("Não tens dinheiro suficiente para pagar a manutenção da empresa '%s'. ~r~Aviso %d/%d.~w~"):
-                                  format(configEmpresa.nome, novosAvisos, MAX_AVISOS))
+                                  _U('maintenance_warning_notification', configEmpresa.nome, novosAvisos, MAX_AVISOS))
                             end
                         end
                     end
@@ -110,7 +106,7 @@ AddEventHandler('comprarempresas:abrirMenu', function(empresaId)
     local empresa = Config.Empresas[empresaId]
 
     if not empresa then
-        TriggerClientEvent('esx:showNotification', src, 'Empresa inválida.')
+        TriggerClientEvent('esx:showNotification', src, _U('invalid_company'))
         return
     end
 
@@ -131,7 +127,7 @@ AddEventHandler('comprarempresas:abrirMenu', function(empresaId)
                 empresa.avisos = empresaDB.avisos or 0
                 TriggerClientEvent('comprarempresas:abrirMenuCliente', src, empresaId, empresa, true)
             else
-                TriggerClientEvent('esx:showNotification', src, 'Esta empresa já tem dono.')
+                TriggerClientEvent('esx:showNotification', src, _U('company_already_owned'))
             end
         end
     end)
@@ -145,19 +141,19 @@ AddEventHandler('comprarempresas:subirNivel', function(empresaId)
     local empresaConfig = Config.Empresas[empresaId]
 
     if not empresaConfig then
-        TriggerClientEvent('esx:showNotification', src, '~r~Empresa inválida.~w~')
+        TriggerClientEvent('esx:showNotification', src, _U('invalid_company'))
         return
     end
 
     MySQL.Async.fetchAll('SELECT * FROM empresas WHERE id = @id', {['@id'] = empresaId}, function(results)
         if not results[1] then
-            TriggerClientEvent('esx:showNotification', src, 'Esta empresa ainda não tem dono.')
+            TriggerClientEvent('esx:showNotification', src, _U('company_not_owned'))
             return
         end
 
         local empresaDB = results[1]
         if empresaDB.dono ~= identifier then
-            TriggerClientEvent('esx:showNotification', src, 'Só o dono pode gerir esta empresa.')
+            TriggerClientEvent('esx:showNotification', src, _U('only_owner_can_manage'))
             return
         end
 
@@ -165,7 +161,7 @@ AddEventHandler('comprarempresas:subirNivel', function(empresaId)
         local maxNivel = empresaConfig.maxNivel or 5
 
         if nivelAtual >= maxNivel then
-            TriggerClientEvent('esx:showNotification', src, 'Já atingiste o nível máximo de investimento.')
+            TriggerClientEvent('esx:showNotification', src, _U('max_level_investment'))
             return
         end
 
@@ -173,13 +169,13 @@ AddEventHandler('comprarempresas:subirNivel', function(empresaId)
         local custo = empresaConfig.investimento[proximoNivel]
 
         if not custo then
-            TriggerClientEvent('esx:showNotification', src, 'Custo do próximo nível não definido.')
+            TriggerClientEvent('esx:showNotification', src, _U('next_level_cost_not_defined'))
             return
         end
 
         local bankMoney = xPlayer.getAccount('bank').money
         if bankMoney < custo then
-            TriggerClientEvent('esx:showNotification', src, 'Não tens dinheiro suficiente para o próximo investimento.')
+            TriggerClientEvent('esx:showNotification', src, _U('not_enough_money'))
             return
         end
 
@@ -189,7 +185,7 @@ AddEventHandler('comprarempresas:subirNivel', function(empresaId)
             ['@nivel'] = proximoNivel,
             ['@id'] = empresaId
         }, function(rowsChanged)
-            TriggerClientEvent('esx:showNotification', src, '~g~Investimento feito!~w~ Agora estás no nível ' .. proximoNivel)
+            TriggerClientEvent('esx:showNotification', src, _U('investment_successful', proximoNivel))
         end)
     end)
 end)
@@ -204,7 +200,7 @@ AddEventHandler('comprarempresas:verDinheiro', function(empresaId)
     
     local empresaData = empresasDB[empresaId]
     if not empresaData or empresaData.dono ~= identifier then
-        TriggerClientEvent('esx:showNotification', src, "Não tens permissão para ver o dinheiro desta empresa.")
+        TriggerClientEvent('esx:showNotification', src, _U('no_permission_to_view_money'))
         return
     end
 
@@ -212,7 +208,7 @@ AddEventHandler('comprarempresas:verDinheiro', function(empresaId)
         if dinheiro then
             TriggerClientEvent('comprarempresas:abrirCofreEmpresa', src, empresaId, dinheiro, empresa)
         else
-            TriggerClientEvent('esx:showNotification', src, "Erro ao obter o dinheiro da empresa.")
+            TriggerClientEvent('esx:showNotification', src, _U('error_getting_money'))
         end
     end)
 end)
@@ -225,7 +221,7 @@ AddEventHandler('comprarempresas:retirarDinheiro', function(empresaId)
     
     local empresaData = empresasDB[empresaId]
     if not empresaData or empresaData.dono ~= identifier then
-        TriggerClientEvent('esx:showNotification', src, "Não tens permissão para retirar o dinheiro desta empresa.")
+        TriggerClientEvent('esx:showNotification', src, _U('no_permission_to_withdraw'))
         return
     end
 
@@ -233,9 +229,9 @@ AddEventHandler('comprarempresas:retirarDinheiro', function(empresaId)
         if dinheiro and dinheiro > 0 then
             xPlayer.addAccountMoney('bank', dinheiro)
             MySQL.Async.execute('UPDATE empresas SET dinheiro = 0 WHERE id = @id', {["@id"] = empresaId})
-            TriggerClientEvent('esx:showNotification', src, "Retiraste ~g~" .. ESX.Math.GroupDigits(dinheiro) .. "€~w~ do cofre da empresa.")
+            TriggerClientEvent('esx:showNotification', src, _U('money_withdrawn', ESX.Math.GroupDigits(dinheiro)))
         else
-            TriggerClientEvent('esx:showNotification', src, "Não há dinheiro disponível para retirada.")
+            TriggerClientEvent('esx:showNotification', src, _U('no_money_to_withdraw'))
         end
     end)
 end)
@@ -246,7 +242,7 @@ AddEventHandler('comprarempresas:comprarEmpresa', function(empresaId)
     local xPlayer = ESX.GetPlayerFromId(src)
     local empresa = Config.Empresas[empresaId]
     if not empresa then
-        TriggerClientEvent('esx:showNotification', src, '~r~Empresa inválida~w~')
+        TriggerClientEvent('esx:showNotification', src, _U('invalid_company'))
         return
     end
 
@@ -257,7 +253,7 @@ AddEventHandler('comprarempresas:comprarEmpresa', function(empresaId)
         end
 
         if empresaDB.dono ~= '' then
-            TriggerClientEvent('esx:showNotification', src, 'Esta empresa já tem dono')
+            TriggerClientEvent('esx:showNotification', src, _U('company_already_owned'))
             return
         end
 
@@ -280,10 +276,10 @@ AddEventHandler('comprarempresas:comprarEmpresa', function(empresaId)
                     nivel = 0,
                     avisos = 0
                 }
-                TriggerClientEvent('esx:showNotification', src, '~g~Parabéns!~w~ Compraste a empresa: ' .. empresa.nome)
+                TriggerClientEvent('esx:showNotification', src, _U('congratulations_bought', empresa.nome))
             end)
         else
-            TriggerClientEvent('esx:showNotification', src, 'Não tens dinheiro suficiente')
+            TriggerClientEvent('esx:showNotification', src, _U('not_enough_money_buy'))
         end
     end)
 end)
@@ -297,16 +293,16 @@ AddEventHandler('comprarempresas:venderEmpresa', function(empresaId)
     local empresaConfig = Config.Empresas[empresaId]
 
     if not empresaDB or not empresaConfig then
-        TriggerClientEvent('esx:showNotification', src, "~r~Empresa inválida.~w~")
+        TriggerClientEvent('esx:showNotification', src, _U('invalid_company'))
         return
     end
 
     if empresaDB.dono ~= identifier then
-        TriggerClientEvent('esx:showNotification', src, "Erro, tenta dar RR")
+        TriggerClientEvent('esx:showNotification', src, _U('sale_error'))
         return
     end
 
-    local precoVenda = math.floor(empresaConfig.preco * 0.8) -- Percentagem da venda
+    local precoVenda = math.floor(empresaConfig.preco * 0.8)
 
     empresaDB.dono = ''
     empresaDB.nivel = 0
@@ -317,5 +313,5 @@ AddEventHandler('comprarempresas:venderEmpresa', function(empresaId)
     })
 
     xPlayer.addAccountMoney('bank', precoVenda)
-    TriggerClientEvent('esx:showNotification', src, "Vendeste a empresa por ~g~" .. ESX.Math.GroupDigits(precoVenda) .. "€~w~")
+    TriggerClientEvent('esx:showNotification', src, _U('company_sold', ESX.Math.GroupDigits(precoVenda)))
 end)
