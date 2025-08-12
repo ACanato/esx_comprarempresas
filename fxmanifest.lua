@@ -2,8 +2,8 @@ fx_version 'bodacious'
 game 'gta5'
 
 author 'Canato'
-description 'Sistema de Empresas'
-version '1.1.0'
+description 'System to buy Companies'
+version '1.2.0'
 
 dependency 'es_extended'
 
@@ -11,11 +11,15 @@ shared_scripts {
     'config.lua'
 }
 
-server_scripts {
-    '@mysql-async/lib/MySQL.lua',
-    'server.lua'
+client_scripts {
+    '@es_extended/locale.lua',
+    'locales/*.lua',
+    'client.lua'
 }
 
-client_scripts {
-    'client.lua'
+server_scripts {
+    '@mysql-async/lib/MySQL.lua',
+    '@es_extended/locale.lua',
+    'locales/*.lua',
+    'server.lua'
 }

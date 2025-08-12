@@ -29,7 +29,7 @@ Citizen.CreateThread(function()
                 )
                 if dist < 1.5 and not menuAberto then
                     SetTextComponentFormat("STRING")
-                    AddTextComponentString("Pressiona ~INPUT_CONTEXT~ para aceder ao menu")
+                    AddTextComponentString(_U('menu_access'))
                     DisplayHelpTextFromStringLabel(0, 0, 1, -1)
                     if IsControlJustReleased(0, 38) then
                         menuAberto = true
@@ -55,7 +55,7 @@ Citizen.CreateThread(function()
                 ESX.UI.Menu.CloseAll()
                 menuAberto = false
                 empresaPos = nil
-                ESX.ShowNotification("Saíste da área da empresa.")
+                ESX.ShowNotification(_U('left_company_area'))
             end
         else
             Citizen.Wait(1000)
@@ -68,19 +68,19 @@ AddEventHandler('comprarempresas:abrirMenuCliente', function(empresaId, empresa,
     local elements = {}
 
     if isDono then   
-        table.insert(elements, {label = "⛔ Avisos: " .. (empresa.avisos or 0) .. " / 3", value = "info_avisos", disabled = true})
-        table.insert(elements, {label = "⬆️ Investimento atual: Nível " .. (empresa.nivel or 0), value = "info_nivel", disabled = true})
-        table.insert(elements, {label = "💰 Cofre da Empresa", value = "ver_dinheiro"})
+        table.insert(elements, {label = _U('warnings_label', empresa.avisos or 0), value = "info_avisos", disabled = true})
+        table.insert(elements, {label = _U('current_investment_label', empresa.nivel or 0), value = "info_nivel", disabled = true})
+        table.insert(elements, {label = _U('company_vault_label'), value = "ver_dinheiro"})
         if empresa.nivel < (Config.Empresas[empresaId].maxNivel or 5) then
             local proximoNivel = (empresa.nivel or 0) + 1
             local custo = Config.Empresas[empresaId].investimento[proximoNivel]
-            table.insert(elements, {label = "📊 Fazer investimento para o nível " .. proximoNivel .. " - " .. ESX.Math.GroupDigits(custo) .. "€", value = "subir_nivel"})
+            table.insert(elements, {label = _U('make_investment_label', proximoNivel, ESX.Math.GroupDigits(custo)), value = "subir_nivel"})
         else
-            table.insert(elements, {label = "⭐ Nível máximo alcançado ⭐", value = "nil", disabled = true})
+            table.insert(elements, {label = _U('max_level_reached'), value = "nil", disabled = true})
         end
         table.insert(elements, {label = "-----------------------------------------", value = ""})
-        local precoVenda = math.floor(empresa.preco * 0.8) -- Percentagem da venda (Label)
-        table.insert(elements, {label = "💸 Vender empresa por " .. ESX.Math.GroupDigits(precoVenda) .. "€", value = "vender_empresa"})
+        local precoVenda = math.floor(empresa.preco * 0.8)
+        table.insert(elements, {label = _U('sell_company_label', ESX.Math.GroupDigits(precoVenda)), value = "vender_empresa"})
     end
 
     ESX.UI.Menu.CloseAll()
@@ -113,11 +113,11 @@ RegisterNetEvent('comprarempresas:abrirMenuCompra')
 AddEventHandler('comprarempresas:abrirMenuCompra', function(empresaId, empresa)
     ESX.UI.Menu.CloseAll()
     local elements = {
-        {label = "Comprar empresa por ".. ESX.Math.GroupDigits(empresa.preco).. "€", value = "comprar"},
-        {label = "Fechar", value = "fechar"}
+        {label = _U('buy_company_label', ESX.Math.GroupDigits(empresa.preco)), value = "comprar"},
+        {label = _U('close_label'), value = "fechar"}
     }
     ESX.UI.Menu.Open('default', GetCurrentResourceName(), 'menu_compra_empresa', {
-        title = "Comprar " .. empresa.nome,
+        title = _U('buy_company_title', empresa.nome),
         align = 'left',
         elements = elements
     }, function(data, menu)
@@ -141,12 +141,12 @@ end)
 RegisterNetEvent('comprarempresas:abrirCofreEmpresa')
 AddEventHandler('comprarempresas:abrirCofreEmpresa', function(empresaId, dinheiro, empresa)
     local elements = {
-        {label = "💶 Dinheiro do cofre: " .. ESX.Math.GroupDigits(dinheiro) .. "€", value = nil, disabled = true},
-        {label = "Retirar Dinheiro", value = "retirar_dinheiro"}
+        {label = _U('vault_money_label', ESX.Math.GroupDigits(dinheiro)), value = nil, disabled = true},
+        {label = _U('withdraw_money_label'), value = "retirar_dinheiro"}
     }
 
     ESX.UI.Menu.Open('default', GetCurrentResourceName(), 'menu_cofre_empresa', {
-        title = "Cofre da Empresa - " .. empresa.nome,
+        title = _U('company_vault_title', empresa.nome),
         align = 'left',
         elements = elements
     }, function(data, menu)
