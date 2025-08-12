@@ -36,10 +36,10 @@ Perfect for enriching your server’s economy with a realistic and engaging busi
 - The owner can access the Company Menu to withdraw accumulated funds from the safe.
 
 ### 🏬 Companies Available
-- Added purchasable companies scattered across the map. (Store, Coffee, Dealership)
+- Purchasable companies scattered across the map. (Store, Coffee, Dealership)
 
 ### 🌐 Multiple Language Support
-- The script now supports Portuguese, English, Spanish, and French.
+- The script supports Portuguese, English, Spanish, and French.
 
 ---
 
