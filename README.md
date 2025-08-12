@@ -1,51 +1,58 @@
-# 🏢 Comprar Empresas (v1.1) – ESX FiveM
+# 🏢 Buy Companies (v1.2) – ESX FiveM
 
-Este script permite aos jogadores adquirir, gerir e lucrar com empresas no servidor FiveM baseado em ESX. Ideal para enriquecer a economia do teu servidor com uma dinâmica de negócios realista e envolvente.
-
----
-
-## 📌 Funcionalidades Principais
-
-### 🏪 Comprar Empresas
-- Jogadores podem adquirir empresas disponíveis que não tenham dono.
-- O valor da compra é automaticamente retirado da conta bancária do jogador.
-- Após a compra, o jogador torna-se o proprietário e ganha acesso à gestão da empresa.
-
-### 📈 Sistema de Investimento por Níveis
-- Cada empresa possui níveis de investimento (de 0 a 5).
-- O dono pode pagar para subir de nível, com custos progressivos.
-- Níveis mais altos oferecem maiores lucros e vantagens estratégicas.
-
-### 💸 Rendimentos Passivos
-- A cada 15 minutos, o proprietário recebe lucros com base no nível atual da empresa.
-- O sistema é totalmente automático e integrado no loop do servidor.
-
-### 🛠️ Manutenção e Despesas
-- A cada 10 minutos, é cobrado um valor de manutenção da empresa.
-- Caso o saldo bancário seja insuficiente, o jogador recebe um aviso.
-- Após 3 avisos consecutivos, a empresa entra em falência e é retirada ao dono.
-
-### 🔁 Venda da Empresa
-- O proprietário pode vender a empresa a qualquer momento.
-- Recebe 80% do valor base da empresa.
-- A empresa volta a ficar disponível para novos compradores.
-
-### 💰 Cofre da Empresa
-- Sistema de cofre da empresa, onde os lucros vão diretamente para o cofre.
-- O proprietário pode aceder ao Menu da Empresa para levantar as verbas acumuladas disponíveis no cofre.
+This script allows players to acquire, manage, and profit from companies on an ESX-based FiveM server.  
+Perfect for enriching your server’s economy with a realistic and engaging business dynamic.
 
 ---
 
-## 🛠️ Requisitos
+## 📌 Main Features
+
+### 🏪 Buy Companies
+- Players can acquire available companies that have no owner.
+- The purchase price is automatically deducted from the player’s bank account.
+- After purchase, the player becomes the owner and gains access to company management.
+
+### 📈 Tiered Investment System
+- Each company has investment levels (from 0 to 5).
+- The owner can pay to level up, with progressive costs.
+- Higher levels offer greater profits and strategic advantages.
+
+### 💸 Passive Income
+- Every 15 minutes, the owner receives profits based on the company’s current level.
+- The system is fully automated and integrated into the server loop.
+
+### 🛠️ Maintenance and Expenses
+- Every 10 minutes, a maintenance fee is charged to the company.
+- If the bank balance is insufficient, the player receives a warning.
+- After 3 consecutive warnings, the company goes bankrupt and is removed from the owner.
+
+### 🔁 Selling the Company
+- The owner can sell the company at any time.
+- They receive 80% of the company’s base value.
+- The company becomes available again for new buyers.
+
+### 💰 Company Safe
+- Company safe system where profits go directly into the safe.
+- The owner can access the Company Menu to withdraw accumulated funds from the safe.
+
+### 🏬 Companies Available
+- Added purchasable companies scattered across the map. (Store, Coffee, Dealership)
+
+### 🌐 Multiple Language Support
+- The script now supports Portuguese, English, Spanish, and French.
+
+---
+
+## 🛠️ Requirements
 - **ESX Framework**
 - es_extended 1.1
-- Base de dados MySQL
+- MySQL database
 
 ---
 
-## 📂 Instalação
+## 📂 Installation
 
-1. Coloca a pasta do script na tua diretoria `resources/`.
-2. Adiciona ao `server.cfg`:
+1. Place the script folder in your `resources/` directory.
+2. Add to your `server.cfg`:
    ```bash
    ensure esx_comprarempresas
